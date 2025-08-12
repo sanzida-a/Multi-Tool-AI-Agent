@@ -3,11 +3,12 @@ from typing import Tuple, List
 from utils.sql_utils import SQLiteDB
 from utils.text_utils import summarize_rows_to_text
 from openai import OpenAI
+from dotenv import load_dotenv
+load_dotenv()
 
 client = OpenAI(
-    
     base_url="https://models.github.ai/inference/v1",
-    api_key=os.getenv["GITHUB_TOKEN"]
+    api_key=os.getenv("GITHUB_TOKEN")  # Fixed: parentheses instead of brackets
 )
 
 class BaseDBTool:
@@ -41,8 +42,10 @@ Schema hint: {schema_hint}
             schema_text = ""
 
         sql = self.nl_to_sql(question, schema_text)
+
         if sql.strip().startswith("--NO_SQL--"):
             return "I could not generate a SQL query for that question."
+
         if not sql.strip().lower().startswith("select"):
             return "For safety, I will only run SELECT queries."
 
