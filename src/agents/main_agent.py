@@ -17,21 +17,26 @@ class MultiToolAgent:
         ]
         
         self.web_keywords = [
-            "what is", "definition", "symptom", "treatment", "cure",
+            "what is", "what are" , "definition", "symptom", "treatment", "cure",
             "causes", "side effect", "diagnosis"
         ]
 
-    def _likely_db_question(self, q: str) -> Optional[str]:  # Fixed: underscores instead of asterisks
+    def _likely_db_question(self, q: str) -> Optional[str]:
         ql = q.lower()
-        
+
+        if any(k in ql for k in self.web_keywords):
+            return None  # Use web tool
+
+        # Now check dataset keywords
         if "heart" in ql or "cardio" in ql:
             return "heart"
         if "cancer" in ql or "tumor" in ql or "tumour" in ql:
             return "cancer"
         if "diabetes" in ql or "glucose" in ql or "insulin" in ql:
             return "diabetes"
-            
+
         if any(k in ql for k in self.db_keywords):
+            # Could try to decide which db based on more keywords
             if any(t in ql for t in ["cholesterol", "heart", "bp"]):
                 return "heart"
             if any(t in ql for t in ["tumor", "malignant"]):
@@ -39,11 +44,10 @@ class MultiToolAgent:
             if any(t in ql for t in ["glucose", "insulin"]):
                 return "diabetes"
             return "heart"
-            
-        if any(k in ql for k in self.web_keywords):
-            return None
-            
-        return "heart"
+
+        # If no keywords matched, return None to trigger web search as fallback
+        return None
+
 
     def answer(self, question: str) -> str:
         route = self._likely_db_question(question)
